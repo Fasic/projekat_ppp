@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Registracija</title>
+    <title>Prisustvo</title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -10,7 +10,7 @@
 
 
     <script language="JavaScript">
-
+        var bili = [];
         function xmlhttpPost(strURL, id) {
             var xmlHttpReq = false;
             if (window.XMLHttpRequest) {
@@ -45,8 +45,12 @@
                 if (http_request.status == 200) {
                     var responceString = http_request.responseText;
                     obj = JSON.parse(responceString);
+                    if(bili.length != obj.prisutni.length) {
+                        bili = obj.prisutni.length;
 
-                    if (id == 'sel1') {
+
+
+                        /* if (id == 'sel1') {
                         select = document.getElementById(id);
                         for (var i = 0; i < obj.select.length; i++) {
                             var opt = document.createElement('option');
@@ -54,8 +58,30 @@
                             opt.innerHTML = obj.select[i];
                             select.appendChild(opt);
                         }
-                    }
+                    }*/
 
+                        //if(j == 0) tr.innerHTML = "Ime i prezime"
+                        //else tr.innerHTML = "" + j;
+
+                        if (id == 'prisustvo') {
+                            var prisustvo = document.getElementById("vrednosti");
+                            while (prisustvo.firstChild) {
+                                prisustvo.removeChild(prisustvo.firstChild);
+                            }
+
+                            for (var i = 0; i < obj.prisutni.length; i++) {
+                                var tr = document.createElement('tr');
+                                for (var j = 0; j < obj.prisutni[i].length; j++) {
+                                    var td = document.createElement('td');
+
+                                    td.innerHTML = obj.prisutni[i][j];
+                                    tr.appendChild(td);
+                                }
+                                prisustvo.appendChild(tr);
+                            }
+
+                        }
+                    }
 
                 } else {
                     alert('ERROR: AJAX request status = ' + http_request.status);
@@ -64,51 +90,29 @@
         }
 
         $(document).ready(function(){
-            xmlhttpPost('/predmeti', 'sel1');
+
+            xmlhttpPost('/prisutni', 'prisustvo');
+            setInterval("xmlhttpPost('/prisutni', 'prisustvo')", 5000);
         });
 
 
+
     </script>
-
-
 </head>
 <body style="text-align: center;">
-<h2>Registracija studenata</h2>
+<div id="imena"></div>
 
 
 <div class="container">
-    <div class="row">
-        <div class="panel panel-default col-md-4 col-md-offset-4   col-xs-8 col-xs-offset-2   col-sm-6 col-sm-offset-3">
-            <div class="panel-body">
-                <form action="/registracija" method="post">
-                    <div class="form-group">
-                        <label>Ime:</label>
-                        <input name="ime" type="text" class="form-control" id="ime">
-                    </div>
-                    <div class="form-group">
-                        <label>Prezime:</label>
-                        <input name="prezime" type="text" class="form-control" id="prezime">
-                    </div>
+    <h2>Prisutni studenti</h2>
+    <table class="table table-striped" id="prisustvo">
+        <thead>
 
-                    <div class="form-group">
-                        <label>Broj indeksa:</label>
-                        <input name="brIndeksa" type="text" class="form-control" id="brIndeksa">
-                    </div>
+        </thead>
+        <tbody id = "vrednosti">
 
-                    <div class="form-group">
-                        <label for="sel1">Selektuj ime:</label>
-                        <select class="form-control" id="sel1" name="ime">
-
-                        </select>
-                    </div>
-
-
-                    <button type="submit" class="btn btn-default">Registracija</button>
-                </form>
-            </div>
-        </div>
-
-    </div>
+        </tbody>
+    </table>
 </div>
 
 

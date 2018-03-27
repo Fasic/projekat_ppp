@@ -1,8 +1,11 @@
 import http.server
+from url.parse import urlparse, parse_qs
+import json
+
+
 Server = http.server.HTTPServer
 BaseHandler = http.server.BaseHTTPRequestHandler
-import json
-json.dumps(['select', 'asd'])
+prviPut = 1
 
 
 class Handler(BaseHandler):
@@ -24,14 +27,30 @@ class Handler(BaseHandler):
                 f = open(putanja) #open requested file
                 self.wfile.write(str.encode(f.read()))
             if(putanja == "prisustvo"):
-                print("Prisustvo")
-                self.wfile.write(str.encode("Fasic")) #ide return tabelu sa prisutnima!!!
+                print("prisustvo")
+                putanja = "prisustvo.html"
+                f = open(putanja) #open requested file
+                self.wfile.write(str.encode(f.read()))
+
+
+                
             if(putanja == "imena"):
                 print("Imena")
                 s = "{\"select\":[\"Filip Vasic\",\"Dragan Dragan\"]}"
                 print(s)
                 self.wfile.write(str.encode(s)) #ide return tabelu sa prisutnima!!!
-                        
+            if(putanja == "prisutni"):
+                global prviPut
+                prviPut+=1
+                print("prisutni")
+                s = self.fakeJsonPrisustvo()
+                print(s)
+                self.wfile.write(str.encode(s)) #ide return tabelu sa prisutnima!!!
+            if(putanja == "predmeti"):
+                print("predmeti")
+                s = "{\"select\":[\"WEB Dizajn\",\"WEB Programiranje\"]}"
+                print(s)
+                self.wfile.write(str.encode(s)) #ide return tabelu sa prisutnima!!!   
                 
             
 
@@ -42,8 +61,22 @@ class Handler(BaseHandler):
             # Print posted data
             putanja = self.path.split("/")
             x = putanja[1]
-            if(x == "prijavljivanje"): print("Prijavljivanje")
-            elif(x == "registracija"): print("Registracija")
+            if(x == "prijavljivanje"):
+                    print("Prijavljivanje")
+            elif(x == "registracija"):
+                    print("Registracija")
+                    content_length = int(self.headers['Content-Length'])
+                    post_data = self.rfile.read(content_length)
+                    post_data = str(post_data.decode("utf-8"))
+                    self._set_headers()
+                    html = "<html><body><h1>POST!</h1><pre>" + str(post_data.decode("utf-8")) + "</pre></body></html>"
+                    self.wfile.write(str.encode(html))
+
+                   
+>>> url = 'http://example.com/?foo=bar&one=1'
+>>> parse_qs(urlparse(url).query)
+{'foo': ['bar'], 'one': ['1']} 
+                    
             else: print("Error 404 page not found.")
 
 
@@ -55,6 +88,18 @@ class Handler(BaseHandler):
             self._set_headers()
             html = "<html><body><h1>POST!</h1><pre>" + str(post_data.decode("utf-8")) + "</pre></body></html>"
             self.wfile.write(str.encode(html))
+            
+        def fakeJsonPrisustvo(self):
+                x = []
+                for i in range(prviPut):
+                    a = ["asd asd"]
+                    for j in range(15):
+                        a.append(0)
+                    x.append(a)
+                data = {}
+                data['prisutni'] = x
+                json_data = json.dumps(data)
+                return json_data
 
 
 def run(server_class=Server, handler_class=Handler, port=8888):

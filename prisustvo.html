@@ -64,6 +64,21 @@
                         //else tr.innerHTML = "" + j;
 
                         if (id == 'prisustvo') {
+                            var zaglavlje = document.getElementById("zaglavlje");
+                            while (zaglavlje.firstChild) {
+                                zaglavlje.removeChild(zaglavlje.firstChild);
+                            }
+                            var tr = document.createElement('tr');
+                            for (var i = 0; i < 16; i++) {
+                                    var td = document.createElement('th');
+                                    if(i == 0) td.innerHTML = "Ime i prezime";
+                                    else td.innerHTML = "T" + i;
+
+                                    tr.appendChild(td);
+
+                            }
+                            zaglavlje.appendChild(tr);
+
                             var prisustvo = document.getElementById("vrednosti");
                             while (prisustvo.firstChild) {
                                 prisustvo.removeChild(prisustvo.firstChild);
@@ -74,7 +89,8 @@
                                 for (var j = 0; j < obj.prisutni[i].length; j++) {
                                     var td = document.createElement('td');
 
-                                    td.innerHTML = obj.prisutni[i][j];
+                                    if(j == 0) td.innerHTML = i+1 + ". " + obj.prisutni[i][j];
+                                    else td.innerHTML = obj.prisutni[i][j];
                                     tr.appendChild(td);
                                 }
                                 prisustvo.appendChild(tr);
@@ -106,7 +122,7 @@
 <div class="container">
     <h2>Prisutni studenti</h2>
     <table class="table table-striped" id="prisustvo">
-        <thead>
+        <thead id = "zaglavlje">
 
         </thead>
         <tbody id = "vrednosti">

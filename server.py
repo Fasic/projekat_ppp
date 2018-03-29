@@ -54,17 +54,19 @@ class Handler(BaseHandler):
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
                 x = self.parsirajPOST(post_data)
-                self.prijaviStudenta(x)
-                self.redirect("prisustvo.html")
+                d = self.prijaviStudenta(x)
+                if(d == False): self.redirectPoruka("Neuspesna prijava! (Nema takvog studenta)")
+                else: self.redirectPoruka("Uspesna prijava (" + d + ")")
 
             elif(x == "registracija"):
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
                 x = self.parsirajPOST(post_data)
-                self.registrujStudenta(x)
+                d = self.registrujStudenta(x)
                 #if neuspesna registracija neuspesnaregistracija.html
-                
-                self.redirect("uspesna_registracija.html")
+                if(d == False):  self.redirectPoruka("NEUSPESNA REGISTRACIJA!!!")
+                else: self.redirectPoruka("Uspesna registracija (" + d + ")")
+                        
 
             else:
                 poruka = "Error 404 page not found."
@@ -82,6 +84,15 @@ class Handler(BaseHandler):
                 print("Redirect -->" + putanja)
                 f = open(putanja)
                 self.wfile.write(str.encode(f.read()))
+
+        def redirectPoruka(self, poruka):
+                self._set_headers()
+                s1 = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Uspesna registracija</title>"""
+                s2 = """</head><body>"""+ poruka + " (redirect za 5 sekundi!)" +"""</body></html>"""
+                f = open("redirect.js")
+                s = f.read()
+                print(s1+s+s2)
+                self.wfile.write(str.encode(s1+s+s2))
                 
 
         def registrujStudenta(self, data):
@@ -105,7 +116,7 @@ class Handler(BaseHandler):
                    insertPoziv = "INSERT INTO student (ime, prezime, indeks, idPredmeta) VALUES ('"+ime+"','"+prezime+"', '"+indeks+"','"+str(idPredmeta)+"')"
                    c.execute(insertPoziv)
                    conn.commit()
-                   r = True
+                   r = ime + " " + prezime
                 else:
                    r = False
 
@@ -139,7 +150,7 @@ class Handler(BaseHandler):
                 c.execute(insertPoziv)
                 conn.commit()
                 conn.close()
-                return True
+                return ime + " " + prezime
         
         def getIdPredmeta(self, naziv):
                 conn = sqlite3.connect('baza.db')
@@ -196,7 +207,7 @@ class Handler(BaseHandler):
                 c = conn.cursor()
                 poziv = 'SELECT * FROM termin WHERE aktivan=1'
                 c.execute(poziv)
-                trenutno = c.fetchone()
+                trenutno = c.fetchone()#ako nema aktivnih termina, ide za sve predmete ili se biraju predmeti xD
                 ID = trenutno[0]
                 idPredmeta = trenutno[3]
 

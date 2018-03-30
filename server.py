@@ -7,6 +7,7 @@ Server = http.server.HTTPServer
 BaseHandler = http.server.BaseHTTPRequestHandler
 prviPut = 1
 ajaxZahtevi = ["imena", "prisutni", "predmeti"]
+getPutanje = ["registracija", "prisustvo", "admin"]
 
 class Handler(BaseHandler):
         def log_message(self, format, *args):
@@ -23,7 +24,7 @@ class Handler(BaseHandler):
             if(putanja == ""):
                 putanja = "index"
                 self.redirect(putanja + ".html")
-            if(putanja == "registracija" or putanja == "prisustvo"):  self.redirect(putanja + ".html")
+            if(putanja in getPutanje):  self.redirect(putanja + ".html")
 
 
             #ajax zahtevi -------------------------------------------------------------
@@ -72,6 +73,18 @@ class Handler(BaseHandler):
                         else: self.redirectPoruka("Uspesna registracija (" + d + ")")
                         
 
+            elif(x == "admin"):
+                    content_length = int(self.headers['Content-Length'])
+                    post_data = self.rfile.read(content_length)
+                    x = self.parsirajPOST(post_data)
+                    if(putanja[2] == "predmet"):
+                            if("add" in x and "naziv" in x): #ide add predmet
+                                self.setPredmet(x["naziv"][0])
+                                self.redirect("admin.html")
+                            elif("del" in x): #ide del predmet
+                                self.delPredmet(x["naziv"][0])
+                                self.redirect("admin.html")
+                            
             else:
                 poruka = "Error 404 page not found."
                 print(poruka)
@@ -214,6 +227,23 @@ class Handler(BaseHandler):
                 conn.close()
                 return json_data
 
+        def setPredmet(self, naziv):
+                poziv = "INSERT INTO predmet (Naziv) VALUES('" + naziv + "');"
+                conn = sqlite3.connect('baza.db')
+                c = conn.cursor()
+                c.execute(poziv)
+                conn.commit()
+                conn.close()
+                return True
+
+        def delPredmet(self, naziv):
+                poziv = "DELETE FROM predmet WHERE naziv = '" + naziv + "'"
+                conn = sqlite3.connect('baza.db')
+                c = conn.cursor()
+                c.execute(poziv)
+                conn.commit()
+                conn.close()
+                return True
             
         def fakeJsonPrisustvo(self):
                 conn = sqlite3.connect('baza.db')

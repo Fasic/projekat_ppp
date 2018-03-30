@@ -54,18 +54,22 @@ class Handler(BaseHandler):
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
                 x = self.parsirajPOST(post_data)
-                d = self.prijaviStudenta(x)
-                if(d == False): self.redirectPoruka("Neuspesna prijava! (Nema takvog studenta)")
-                else: self.redirectPoruka("Uspesna prijava (" + d + ")")
+                if("ime" not in x or "indeks" not in x): self.redirectPoruka("Neuspesna prijava! (Nisu popunjena sva polja)")
+                else:
+                        d = self.prijaviStudenta(x)
+                        if(d == False): self.redirectPoruka("Neuspesna prijava! (Nema takvog studenta)")
+                        else: self.redirectPoruka(d)
 
             elif(x == "registracija"):
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
                 x = self.parsirajPOST(post_data)
-                d = self.registrujStudenta(x)
-                #if neuspesna registracija neuspesnaregistracija.html
-                if(d == False):  self.redirectPoruka("NEUSPESNA REGISTRACIJA!!!")
-                else: self.redirectPoruka("Uspesna registracija (" + d + ")")
+                if("ime" not in x or "brIndeksa" not in x or "prezime" not in x or "predmet" not in x): self.redirectPoruka("Neuspesna registracija! (Nisu popunjena sva polja)")
+                else:
+                        d = self.registrujStudenta(x)
+                        #if neuspesna registracija neuspesnaregistracija.html
+                        if(d == False):  self.redirectPoruka("Neuspesna registracija!!! (Student vec postoji sudent)")
+                        else: self.redirectPoruka("Uspesna registracija (" + d + ")")
                         
 
             else:
@@ -97,10 +101,12 @@ class Handler(BaseHandler):
 
         def registrujStudenta(self, data):
                 r = False
-                ime = data["ime"][0]
-                prezime = data["prezime"][0]
-                indeks = data["brIndeksa"][0]
+                ime = data["ime"][0].title()
+                prezime = data["prezime"][0].title()
+                indeks = data["brIndeksa"][0].upper()
                 predmet = data["predmet"][0]
+
+
                 
                 idPredmeta = self.getIdPredmeta(predmet)
 
@@ -128,8 +134,8 @@ class Handler(BaseHandler):
                 a = data["ime"][0].split(" ")
                 ime = a[0]
                 prezime = a[1]
-                indeks = data["brIndeksa"][0]
-
+                indeks = data["brIndeksa"][0].upper()
+                indeks = indeks.upper()
                 conn = sqlite3.connect('baza.db')
                 c = conn.cursor()
                 poziv = 'SELECT * FROM termin WHERE aktivan=1'
@@ -146,11 +152,18 @@ class Handler(BaseHandler):
                         conn.close()
                         print("Nema studenta")
                         return False
+
+                c.execute("SELECT * FROM prisustvo WHERE idPredmeta=" + str(idPredmeta) + " AND idStudenta=" + str(w[0][0]) + " AND  termin =" + str(ID))
+                if(len(c.fetchall()) > 0):
+                        conn.close()
+                        return "Vec ste prijavljeni (" + ime + " " + prezime + ")"
+
+                
                 insertPoziv = "INSERT INTO prisustvo (idPredmeta, idStudenta, termin) VALUES (" + str(idPredmeta) + ", " + str(w[0][0]) + "," + str(ID) + ")"
                 c.execute(insertPoziv)
                 conn.commit()
                 conn.close()
-                return ime + " " + prezime
+                return "Uspesna prijava (" + ime + " " + prezime + ")"
         
         def getIdPredmeta(self, naziv):
                 conn = sqlite3.connect('baza.db')

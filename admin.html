@@ -2,13 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Admin</title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script>
+        function eraseCookie() {
+            document.cookie = 'password=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            window.location.replace('/');
+        }
+    </script>
+
+
+    <script language="JavaScript">
+
+        function xmlhttpPost(strURL, id) {
+            var xmlHttpReq = false;
+            if (window.XMLHttpRequest) {
+                xmlHttpReq = new XMLHttpRequest();
+                if (xmlHttpReq.overrideMimeType) {
+                    xmlHttpReq.overrideMimeType('text/xml');
+                }
+            } else if (window.ActiveXObject) { // IE
+                try {
+                    xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+                } catch (e) {
+                    try {
+                        xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+                    } catch (e) {}
+                }
+            }
+            if (!xmlHttpReq) {
+                alert('ERROR AJAX:( Cannot create an XMLHTTP instance');
+                return false;
+            }
+            xmlHttpReq.open('GET', strURL, true);
+            xmlHttpReq.setRequestHeader('Content-Type',
+                'application/x-www-form-urlencoded');
+            xmlHttpReq.onreadystatechange = function() {
+                callBackFunction(xmlHttpReq, id);
+            };
+            xmlHttpReq.send("");
+        }
+
+        function callBackFunction(http_request, id) {
+            if (http_request.readyState == 4) {
+                if (http_request.status == 200) {
+                    var responceString = http_request.responseText;
+                    obj = JSON.parse(responceString);
+
+                    if (id == 'sel1') {
+                        select = document.getElementById(id);
+                        for (var i = 0; i < obj.select.length; i++) {
+                            var opt = document.createElement('option');
+                            opt.value = obj.select[i];
+                            opt.innerHTML = obj.select[i];
+                            select.appendChild(opt);
+                        }
+                    }
+
+
+                } else {
+                    alert('ERROR: AJAX request status = ' + http_request.status);
+                }
+            }
+        }
+
+        $(document).ready(function(){
+            xmlhttpPost('/predmeti', 'sel1');
+        });
+
+
+    </script>
+
 </head>
 <body>
+<a  onclick="eraseCookie()" href="#">Logout</a>
 <div class="container">
     <div class="row">
         <div class="panel panel-default col-md-4 col-md-offset-4   col-xs-8 col-xs-offset-2   col-sm-6 col-sm-offset-3">
@@ -23,6 +94,56 @@
                     <input type="submit" name="add" value="Add" />
                     <input type="submit" name="del" value="Delete" />
 
+                </form>
+            </div>
+        </div>
+
+
+
+        <div class="panel panel-default col-md-4 col-md-offset-4   col-xs-8 col-xs-offset-2   col-sm-6 col-sm-offset-3">
+            <h3>Brisanje podataka o prisustvu</h3>
+            <div class="panel-body">
+                <form action="/admin/prisustvo" method="post">
+                    <input type="submit" name="del" value="Delete" />
+                </form>
+            </div>
+        </div>
+
+        <div class="panel panel-default col-md-4 col-md-offset-4   col-xs-8 col-xs-offset-2   col-sm-6 col-sm-offset-3">
+            <h3>Postavljanje aktivnog termina</h3>
+            <div class="panel-body">
+                <form action="/admin/termin" method="post">
+
+                    <div class="form-group">
+                        <label for="sel1">Selektuj predmet:</label>
+                        <select class="form-control" id="sel1" name="predmet">
+
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sel2">Selektuj termin:</label>
+                        <select class="form-control" id="sel2" name="termin">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                        </select>
+                    </div>
+
+                    <input type="submit" name="add" value="Postavi aktivan termin" />
+                    <input type="submit" name="del" value="Deaktiviraj sve termine" />
                 </form>
             </div>
         </div>
